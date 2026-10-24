@@ -147,6 +147,19 @@ test("Seedance 2.5 sends schema-defined bitrate_mode, not output_format", () => 
   assert.equal(body.bitrate_mode, "high");
   assert.ok(!("output_format" in body));
 });
+test("Seedance 2.5 settings match the live platform enums", () => {
+  for (const model of [seedance25, seedance25Edit, seedance25Extend]) {
+    assert.deepEqual(model.settings.resolution.values, ["480p", "720p", "1080p"]);
+    assert.equal(model.settings.bitrateMode.default, "standard");
+  }
+});
+test("Seedance 2.5 fastest text-to-video request body", () => {
+  const settings = { duration: 4, resolution: "480p", aspectRatio: "16:9", generateAudio: false, bitrateMode: "standard" };
+  assert.deepEqual(toPlatform(plane(seedance25, {}, { prompt: { text: "A hummingbird" }, settings })), {
+    path: "bytedance/seedance-2.5/text-to-video",
+    body: { prompt: "A hummingbird", resolution: "480p", generate_audio: false, duration: 4, bitrate_mode: "standard", aspect_ratio: "16:9" },
+  });
+});
 test("grouping retains every attachment rather than truncating", () => {
   assert.equal(mediaInputs.groupMedia(items("video", 11)).video.length, 11);
 });
