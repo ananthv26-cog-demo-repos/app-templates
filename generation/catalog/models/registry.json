@@ -66,6 +66,11 @@
           "target": "~/generation/catalog/models/kling-3.ts"
         },
         {
+          "path": "kling-4.ts",
+          "type": "registry:file",
+          "target": "~/generation/catalog/models/kling-4.ts"
+        },
+        {
           "path": "kling-o1.ts",
           "type": "registry:file",
           "target": "~/generation/catalog/models/kling-o1.ts"
@@ -74,6 +79,11 @@
           "path": "kling-o3.ts",
           "type": "registry:file",
           "target": "~/generation/catalog/models/kling-o3.ts"
+        },
+        {
+          "path": "kling-o3-reference.ts",
+          "type": "registry:file",
+          "target": "~/generation/catalog/models/kling-o3-reference.ts"
         },
         {
           "path": "ltx-2.5-fast.ts",
@@ -411,6 +421,29 @@
       ]
     },
     {
+      "name": "kling-4",
+      "type": "registry:item",
+      "title": "Kling 4.0",
+      "description": "Kling 4.0 video model for Higgsfield app templates. Requires a template item (studio).",
+      "categories": [
+        "model",
+        "video"
+      ],
+      "meta": {
+        "ids": [
+          "kling-4"
+        ],
+        "surface": "video"
+      },
+      "files": [
+        {
+          "path": "kling-4.ts",
+          "type": "registry:file",
+          "target": "~/generation/catalog/models/kling-4.ts"
+        }
+      ]
+    },
+    {
       "name": "kling-o1",
       "type": "registry:item",
       "title": "Kling O1 (Omni)",
@@ -453,6 +486,29 @@
           "path": "kling-o3.ts",
           "type": "registry:file",
           "target": "~/generation/catalog/models/kling-o3.ts"
+        }
+      ]
+    },
+    {
+      "name": "kling-o3-reference",
+      "type": "registry:item",
+      "title": "Kling 3.0 Omni",
+      "description": "Kling 3.0 Omni video model for Higgsfield app templates. Requires a template item (studio).",
+      "categories": [
+        "model",
+        "video"
+      ],
+      "meta": {
+        "ids": [
+          "kling-o3-reference"
+        ],
+        "surface": "video"
+      },
+      "files": [
+        {
+          "path": "kling-o3-reference.ts",
+          "type": "registry:file",
+          "target": "~/generation/catalog/models/kling-o3-reference.ts"
         }
       ]
     },
