@@ -3,9 +3,17 @@ import { SEEDANCE_ASPECT } from "../tokens"
 import type { ModelEntry } from "../types"
 
 const seedance25Settings = {
-  resolution: { type: "enum", values: ["480p", "720p"], default: "720p" },
+  resolution: {
+    type: "enum",
+    values: ["480p", "720p", "1080p"],
+    default: "720p",
+  },
   generateAudio: { type: "boolean", default: true },
-  bitrateMode: { type: "enum", values: ["standard", "high"], default: "high" },
+  bitrateMode: {
+    type: "enum",
+    values: ["standard", "high"],
+    default: "standard",
+  },
 } as const satisfies ModelEntry["settings"]
 
 export const seedance25: ModelEntry = {
