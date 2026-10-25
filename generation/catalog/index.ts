@@ -1,5 +1,5 @@
 import { MODELS } from "./models.generated"
-import { parseSettings } from "./parse-settings"
+import { coerceSettings, parseSettings } from "./parse-settings"
 import type { ModelEntry } from "./types"
 
 export { MODELS }
@@ -25,4 +25,4 @@ export type {
   PlatformRequest,
   Surface,
 } from "./types"
-export { parseSettings }
+export { coerceSettings, parseSettings }

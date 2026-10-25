@@ -211,3 +211,16 @@ test("PlatformError flattens pydantic validation details instead of hiding them 
   assert.equal(new PlatformError(400, { detail: "resolution: '720p' is not one of ['2K']" }).message, "resolution: '720p' is not one of ['2K']");
   assert.equal(new PlatformError(500, {}).message, "Platform request failed (500)");
 });
+
+test("settings saved under an older catalog snap to the nearest value the platform accepts", async () => {
+  const { coerceSettings, parseSettings } = await import("../generation/catalog/parse-settings.ts");
+  const ltx = MODELS.find((model) => model.id === "ltx-2.5-fast");
+  assert.throws(() => parseSettings(ltx, { duration: 7 }), /Invalid duration/);
+  assert.throws(() => parseSettings(ltx, { duration: 4 }), /Invalid duration/);
+  assert.equal(coerceSettings(ltx, { duration: 7 }).duration, 8);
+  assert.equal(coerceSettings(ltx, { duration: 4 }).duration, 6);
+  assert.equal(coerceSettings(ltx, { duration: 15 }).duration, 10);
+  const h3 = MODELS.find((model) => model.id === "minimax-h3");
+  assert.equal(coerceSettings(h3, { resolution: "720p" }).resolution, "2K");
+  assert.doesNotThrow(() => parseSettings(ltx, coerceSettings(ltx, { duration: 7, resolution: "720p" })));
+});
