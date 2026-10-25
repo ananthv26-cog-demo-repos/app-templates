@@ -179,5 +179,19 @@ async function readJson(response: Response): Promise<unknown> {
 function messageFromBody(status: number, body: unknown): string {
   const detail = asRecord(body).detail
   if (typeof detail === "string" && detail) return detail
+  if (Array.isArray(detail)) {
+    const issues = detail
+      .map((issue) => {
+        const { loc, msg } = asRecord(issue)
+        const field = Array.isArray(loc)
+          ? loc
+              .filter((part) => typeof part === "string" && part !== "body")
+              .join(".")
+          : ""
+        return typeof msg === "string" ? (field ? `${field}: ${msg}` : msg) : ""
+      })
+      .filter(Boolean)
+    if (issues.length) return issues.join("; ")
+  }
   return `Platform request failed (${status})`
 }

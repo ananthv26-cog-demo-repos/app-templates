@@ -191,3 +191,23 @@ test("MiniMax H3 only offers the resolution the platform accepts", () => {
   assert.equal(request.path, "minimax/h3/text-to-video");
   assert.equal(request.body.resolution, "2K");
 });
+
+test("video models only offer durations the platform accepts", () => {
+  const byId = Object.fromEntries(MODELS.map((model) => [model.id, model]));
+  assert.deepEqual(byId["minimax-hailuo-2.3"].settings.duration, { type: "range", min: 6, max: 10, step: 4, default: 6 });
+  assert.deepEqual(byId["ltx-2.5-fast"].settings.duration, { type: "range", min: 6, max: 10, step: 2, default: 6 });
+  assert.deepEqual(byId["wan-2.6"].settings.duration, { type: "range", min: 5, max: 15, step: 5, default: 5 });
+});
+
+test("PlatformError flattens pydantic validation details instead of hiding them behind the status code", async () => {
+  const { PlatformError } = await import("../generation/platform.ts");
+  const error = new PlatformError(422, {
+    detail: [
+      { type: "missing", loc: ["body", "image_url"], msg: "Field required" },
+      { type: "string_type", loc: ["body", "prompt"], msg: "Input should be a valid string" },
+    ],
+  });
+  assert.equal(error.message, "image_url: Field required; prompt: Input should be a valid string");
+  assert.equal(new PlatformError(400, { detail: "resolution: '720p' is not one of ['2K']" }).message, "resolution: '720p' is not one of ['2K']");
+  assert.equal(new PlatformError(500, {}).message, "Platform request failed (500)");
+});

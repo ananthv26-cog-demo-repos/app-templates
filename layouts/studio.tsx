@@ -438,6 +438,7 @@ export function StudioTemplate({
     model,
     onModelChange: (id) => {
       setLocalError(null)
+      runs.setError(null)
       setActiveModel(id)
     },
     settings,
