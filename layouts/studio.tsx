@@ -21,7 +21,12 @@ import { UserGenerations } from "@/components/studio/user-generations"
 import type { GalleryItem } from "@/components/studio/gallery/gallery-types"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { hasPlatformCredentials } from "@/generation/actions"
-import { MODELS, getModel, parseSettings } from "@/generation/catalog"
+import {
+  MODELS,
+  coerceSettings,
+  getModel,
+  parseSettings,
+} from "@/generation/catalog"
 import type {
   GenerationPlane,
   MediaItem,
@@ -305,8 +310,8 @@ export function StudioTemplate({
     }
   }, [modelId, models])
   const settings = useMemo(
-    () => settingsByModel[model.id] ?? {},
-    [settingsByModel, model.id]
+    () => coerceSettings(model, settingsByModel[model.id] ?? {}),
+    [settingsByModel, model]
   )
   const inputMode = inferInputMode(model, media)
   const prepared = useMemo(() => {
@@ -427,7 +432,10 @@ export function StudioTemplate({
   // setModel derives the surface from the model, so switching surface = picking its first model.
   const changeSurface = (next: Surface) => {
     const first = MODELS.find((m) => m.surface === next)
-    if (first) setActiveModel(first.id)
+    if (!first) return
+    setLocalError(null)
+    runs.setError(null)
+    setActiveModel(first.id)
   }
 
   const dock: DockProps = {
@@ -438,6 +446,7 @@ export function StudioTemplate({
     model,
     onModelChange: (id) => {
       setLocalError(null)
+      runs.setError(null)
       setActiveModel(id)
     },
     settings,

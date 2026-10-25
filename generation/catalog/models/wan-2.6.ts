@@ -1,6 +1,7 @@
 import { t2v, videoModel } from "../defaults"
+import type { ModelEntry } from "../types"
 
-export default videoModel(
+const base = videoModel(
   "wan-2.6",
   "Wan 2.6",
   { start: 1 },
@@ -10,3 +11,13 @@ export default videoModel(
     order: 53,
   }
 )
+
+const wan26: ModelEntry = {
+  ...base,
+  settings: {
+    ...base.settings,
+    duration: { type: "range", min: 5, max: 15, step: 5, default: 5 },
+  },
+}
+
+export default wan26

@@ -171,3 +171,56 @@ test("reference mode rejects empty input and never ignores incompatible media", 
   assert.throws(() => toPlatform(plane(seedance25, { audio: items("audio", 1) }, { inputMode: "frames" })), /not supported/i);
   assert.throws(() => toPlatform(plane(seedance25, {}, { inputMode: "unknown" })), /input mode/i);
 });
+
+test("models whose platform endpoint requires a frame refuse prompt-only runs before calling the platform", () => {
+  const byId = Object.fromEntries(MODELS.map((model) => [model.id, model]));
+  for (const id of ["dop", "kling-2.5", "kling-o3", "kling-o1"]) {
+    assert.throws(() => toPlatform(plane(byId[id])), /Add a start frame/, id);
+    assert.doesNotThrow(() => toPlatform(plane(byId[id], { start: items("start", 1) })), id);
+  }
+  for (const id of ["kling-3-motion-std", "kling-3-motion-pro"]) {
+    assert.throws(() => toPlatform(plane(byId[id], { start: items("start", 1) })), /Add a video reference/, id);
+    assert.doesNotThrow(() => toPlatform(plane(byId[id], { start: items("start", 1), video: items("video", 1) })), id);
+  }
+});
+
+test("MiniMax H3 only offers the resolution the platform accepts", () => {
+  const h3 = MODELS.find((model) => model.id === "minimax-h3");
+  assert.deepEqual(h3.settings.resolution.values, ["2K"]);
+  const request = toPlatform(plane(h3, {}, { settings: { duration: 5, resolution: "2K", aspectRatio: "16:9" } }));
+  assert.equal(request.path, "minimax/h3/text-to-video");
+  assert.equal(request.body.resolution, "2K");
+});
+
+test("video models only offer durations the platform accepts", () => {
+  const byId = Object.fromEntries(MODELS.map((model) => [model.id, model]));
+  assert.deepEqual(byId["minimax-hailuo-2.3"].settings.duration, { type: "range", min: 6, max: 10, step: 4, default: 6 });
+  assert.deepEqual(byId["ltx-2.5-fast"].settings.duration, { type: "range", min: 6, max: 10, step: 2, default: 6 });
+  assert.deepEqual(byId["wan-2.6"].settings.duration, { type: "range", min: 5, max: 15, step: 5, default: 5 });
+});
+
+test("PlatformError flattens pydantic validation details instead of hiding them behind the status code", async () => {
+  const { PlatformError } = await import("../generation/platform.ts");
+  const error = new PlatformError(422, {
+    detail: [
+      { type: "missing", loc: ["body", "image_url"], msg: "Field required" },
+      { type: "string_type", loc: ["body", "prompt"], msg: "Input should be a valid string" },
+    ],
+  });
+  assert.equal(error.message, "image_url: Field required; prompt: Input should be a valid string");
+  assert.equal(new PlatformError(400, { detail: "resolution: '720p' is not one of ['2K']" }).message, "resolution: '720p' is not one of ['2K']");
+  assert.equal(new PlatformError(500, {}).message, "Platform request failed (500)");
+});
+
+test("settings saved under an older catalog snap to the nearest value the platform accepts", async () => {
+  const { coerceSettings, parseSettings } = await import("../generation/catalog/parse-settings.ts");
+  const ltx = MODELS.find((model) => model.id === "ltx-2.5-fast");
+  assert.throws(() => parseSettings(ltx, { duration: 7 }), /Invalid duration/);
+  assert.throws(() => parseSettings(ltx, { duration: 4 }), /Invalid duration/);
+  assert.equal(coerceSettings(ltx, { duration: 7 }).duration, 8);
+  assert.equal(coerceSettings(ltx, { duration: 4 }).duration, 6);
+  assert.equal(coerceSettings(ltx, { duration: 15 }).duration, 10);
+  const h3 = MODELS.find((model) => model.id === "minimax-h3");
+  assert.equal(coerceSettings(h3, { resolution: "720p" }).resolution, "2K");
+  assert.doesNotThrow(() => parseSettings(ltx, coerceSettings(ltx, { duration: 7, resolution: "720p" })));
+});
