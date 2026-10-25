@@ -1,9 +1,15 @@
 import { videoModel } from "../defaults"
+import type { ModelEntry } from "../types"
 
-export default videoModel(
-  "kling-2.5",
-  "Kling 2.5",
-  { start: 1 },
-  { image: "kling-video/v2.5-turbo/standard/image-to-video" },
-  { icon: "kling", order: 60 }
-)
+const kling25: ModelEntry = {
+  ...videoModel(
+    "kling-2.5",
+    "Kling 2.5",
+    { start: 1 },
+    { image: "kling-video/v2.5-turbo/standard/image-to-video" },
+    { icon: "kling", order: 60 }
+  ),
+  requiredRoles: ["start"],
+}
+
+export default kling25

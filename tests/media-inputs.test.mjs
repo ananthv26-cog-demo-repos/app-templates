@@ -171,3 +171,23 @@ test("reference mode rejects empty input and never ignores incompatible media", 
   assert.throws(() => toPlatform(plane(seedance25, { audio: items("audio", 1) }, { inputMode: "frames" })), /not supported/i);
   assert.throws(() => toPlatform(plane(seedance25, {}, { inputMode: "unknown" })), /input mode/i);
 });
+
+test("models whose platform endpoint requires a frame refuse prompt-only runs before calling the platform", () => {
+  const byId = Object.fromEntries(MODELS.map((model) => [model.id, model]));
+  for (const id of ["dop", "kling-2.5", "kling-o3", "kling-o1"]) {
+    assert.throws(() => toPlatform(plane(byId[id])), /Add a start frame/, id);
+    assert.doesNotThrow(() => toPlatform(plane(byId[id], { start: items("start", 1) })), id);
+  }
+  for (const id of ["kling-3-motion-std", "kling-3-motion-pro"]) {
+    assert.throws(() => toPlatform(plane(byId[id], { start: items("start", 1) })), /Add a video reference/, id);
+    assert.doesNotThrow(() => toPlatform(plane(byId[id], { start: items("start", 1), video: items("video", 1) })), id);
+  }
+});
+
+test("MiniMax H3 only offers the resolution the platform accepts", () => {
+  const h3 = MODELS.find((model) => model.id === "minimax-h3");
+  assert.deepEqual(h3.settings.resolution.values, ["2K"]);
+  const request = toPlatform(plane(h3, {}, { settings: { duration: 5, resolution: "2K", aspectRatio: "16:9" } }));
+  assert.equal(request.path, "minimax/h3/text-to-video");
+  assert.equal(request.body.resolution, "2K");
+});
